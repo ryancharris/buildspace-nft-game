@@ -26,6 +26,18 @@ contract FinalFantasyNFT is ERC721 {
     uint limitBreakDamage;
   }
 
+  struct Boss {
+    string name;
+    string imageURI;
+    uint hp;
+    uint maxHp;
+    uint mp;
+    uint maxMp;
+    uint attackDamage;
+    uint spellDamage;
+  }
+  Boss public boss;
+
   using Counters for Counters.Counter;
   Counters.Counter private _tokenIds;
 
@@ -42,8 +54,21 @@ contract FinalFantasyNFT is ERC721 {
     uint[] memory characterAttackDamage,
     uint[] memory characterSpellDamage,
     uint[] memory characterLimitBreakRequirement,
-    uint[] memory characterLimitBreakDamage
+    uint[] memory characterLimitBreakDamage,
+    Boss memory boss
   ) ERC721("Final Fantasy", "FFVII") {
+    boss = Boss({
+      name: boss.name,
+      imageURI: boss.imageURI,
+      hp: boss.hp,
+      maxHp: boss.maxHp,
+      mp: boss.mp,
+      maxMp: boss.maxMp,
+      attackDamage: boss.attackDamage,
+      spellDamage: boss.spellDamage
+    });
+
+    console.log("Done initializing boss %s w/ HP %s, img %s", boss.name, boss.hp, boss.imageURI);
     
     for (uint i = 0; i < characterNames.length; i += 1) {
       defaultCharacters.push(Characteristics({

@@ -12,6 +12,17 @@ const spellDamage = [10, 20, 6, 14, 10]; // out of 25
 const attackDamage = [14, 12, 16, 10, 9]; // out of 25
 const limitBreakRequirement = [7, 5, 10, 6, 8]; // out of 10
 const limitBreakDamage = [20, 18, 22, 16, 15]; // out of 25
+const sepiroth = {
+  name: "Sepiroth",
+  imageURI:
+    "https://en.wikipedia.org/wiki/Sephiroth_(Final_Fantasy)#/media/File:Sephiroth.png",
+  hp: 150,
+  maxHp: 150,
+  mp: 50,
+  maxMp: 50,
+  attackDamage: 20,
+  spellDamage: 20,
+};
 
 const main = async () => {
   const gameContractFactory = await hre.ethers.getContractFactory(
@@ -25,7 +36,8 @@ const main = async () => {
     attackDamage,
     spellDamage,
     limitBreakRequirement,
-    limitBreakDamage
+    limitBreakDamage,
+    sepiroth
   );
   await gameContract.deployed();
   console.log("Contract deployed to:", gameContract.address);
