@@ -22,6 +22,7 @@ contract FinalFantasyNFT is ERC721 {
     uint maxMp;
     uint attackDamage;
     uint spellDamage;
+    uint limitBreakLevel;
     uint limitBreakRequirement;
     uint limitBreakDamage;
   }
@@ -46,6 +47,11 @@ contract FinalFantasyNFT is ERC721 {
   mapping(uint256 => Characteristics) public nftHolderAttributes;
   mapping(address => uint256) public nftHolders;
 
+  event CharacterNFTMinted(address sender, uint256 tokenId, uint256 characterIndex);
+  event AttackCompleted(uint newBossHp, uint newPlayerHp);
+  event LimitBreakAttackCompleted(uint newBossHp, uint newPlayerHp);
+  event SpellCompleted(uint newBossHp, uint newPlayerHp);
+
   constructor(
     string[] memory characterNames,
     string[] memory characterImageURIs,
@@ -53,6 +59,7 @@ contract FinalFantasyNFT is ERC721 {
     uint[] memory characterMp,
     uint[] memory characterAttackDamage,
     uint[] memory characterSpellDamage,
+    uint[] memory characterLimitBreakLevel,
     uint[] memory characterLimitBreakRequirement,
     uint[] memory characterLimitBreakDamage,
     string memory bossName,
@@ -83,6 +90,7 @@ contract FinalFantasyNFT is ERC721 {
         maxMp: characterMp[i],
         attackDamage: characterAttackDamage[i],
         spellDamage: characterSpellDamage[i],
+        limitBreakLevel: characterLimitBreakLevel[i],
         limitBreakRequirement: characterLimitBreakRequirement[i],
         limitBreakDamage: characterLimitBreakDamage[i]
       }));
@@ -100,19 +108,22 @@ contract FinalFantasyNFT is ERC721 {
     _safeMint(msg.sender, newItemId);
 
     // Add new item to nftHolderAttributes
-    nftHolderAttributes[newItemId] = Characteristics({
-      index: _characterIndex,
-      name: defaultCharacters[_characterIndex].name,
-      imageURI: defaultCharacters[_characterIndex].imageURI,
-      hp: defaultCharacters[_characterIndex].hp,
-      maxHp: defaultCharacters[_characterIndex].maxHp,
-      mp: defaultCharacters[_characterIndex].mp,
-      maxMp: defaultCharacters[_characterIndex].maxMp,
-      attackDamage: defaultCharacters[_characterIndex].attackDamage,
-      spellDamage: defaultCharacters[_characterIndex].spellDamage,
-      limitBreakRequirement: defaultCharacters[_characterIndex].limitBreakRequirement,
-      limitBreakDamage: defaultCharacters[_characterIndex].limitBreakDamage
-    });
+    {
+      nftHolderAttributes[newItemId] = Characteristics({
+        index: _characterIndex,
+        name: defaultCharacters[_characterIndex].name,
+        imageURI: defaultCharacters[_characterIndex].imageURI,
+        hp: defaultCharacters[_characterIndex].hp,
+        maxHp: defaultCharacters[_characterIndex].maxHp,
+        mp: defaultCharacters[_characterIndex].mp,
+        maxMp: defaultCharacters[_characterIndex].maxMp,
+        attackDamage: defaultCharacters[_characterIndex].attackDamage,
+        spellDamage: defaultCharacters[_characterIndex].spellDamage,
+        limitBreakLevel: defaultCharacters[_characterIndex].limitBreakLevel,
+        limitBreakRequirement: defaultCharacters[_characterIndex].limitBreakRequirement,
+        limitBreakDamage: defaultCharacters[_characterIndex].limitBreakDamage
+      });
+    }
 
     console.log("Minted NFT w/ tokenId %s, name %s, and characterIndex %s", newItemId, nftHolderAttributes[newItemId].name, _characterIndex);
 
@@ -120,6 +131,8 @@ contract FinalFantasyNFT is ERC721 {
     nftHolders[msg.sender] = newItemId;
 
     _tokenIds.increment();
+
+    emit CharacterNFTMinted(msg.sender, newItemId, _characterIndex);
   }
 
   function tokenURI(uint256 _tokenId) public view override returns (string memory) {
@@ -160,6 +173,25 @@ contract FinalFantasyNFT is ERC721 {
     return output;
   }
 
+  function checkIfUserHasNFT() public view returns (Characteristics memory) {
+    uint256 userNftTokenID = nftHolders[msg.sender];
+
+    if (userNftTokenID > 0) {
+      return nftHolderAttributes[userNftTokenID];
+    } else {
+      Characteristics memory nonExistentUser;
+      return nonExistentUser;
+    }
+  }
+
+  function getAllDefaultCharacters() public view returns (Characteristics[] memory) {
+    return defaultCharacters;
+  }
+
+  function getBoss() public view returns (Boss memory) {
+    return boss;
+  }
+
   function attackBoss() public {
     uint256 nftTokenId = nftHolders[msg.sender];
     Characteristics storage player = nftHolderAttributes[nftTokenId];
@@ -171,8 +203,7 @@ contract FinalFantasyNFT is ERC721 {
     console.log(
       "\n%s (# %s) is attacking!", 
       player.name, 
-      nftTokenId, 
-      boss.name
+      nftTokenId
     );
     
     require(
@@ -202,6 +233,41 @@ contract FinalFantasyNFT is ERC721 {
       console.log("\n%s: %s HP --> %s HP", player.name, player.hp, player.hp - boss.attackDamage);
       player.hp = player.hp - boss.attackDamage;
     }
+
+    emit AttackCompleted(boss.hp, player.hp);
+  }
+
+  function limitBreakAttack() public {
+    uint256 nftTokenId = nftHolders[msg.sender];
+    Characteristics storage player = nftHolderAttributes[nftTokenId];
+
+    require (
+      player.limitBreakLevel == player.limitBreakRequirement,
+      "Error: Player can't perform a limit break!"
+    );
+    console.log(
+      "\n%s (# %s) is performing a special attack!",
+      player.name,
+      nftTokenId
+    );
+
+    require(
+      boss.hp > 0,
+      "Error: Sepiroth has no HP!"
+    );
+    console.log("\n%s has %s HP and takes %s damage!", boss.name, boss.hp, player.limitBreakDamage);
+
+    if (boss.hp < player.limitBreakDamage) {
+      // The boss has died!
+      console.log("\n%s is dead!", boss.name);
+      boss.hp = 0;
+    } else {
+      // The boss takes damage
+      console.log("\n%s: %s HP --> %s HP", boss.name, boss.hp, boss.hp - player.limitBreakDamage);
+      boss.hp = boss.hp - player.limitBreakDamage;
+    }
+
+    emit LimitBreakAttackCompleted(boss.hp, player.hp);
   }
 
   function castSpellOnBoss() public {
@@ -220,7 +286,7 @@ contract FinalFantasyNFT is ERC721 {
     console.log(
       "\n%s (# %s) is casting a spell on %s!", 
       player.name, 
-      nftTokenId, 
+      nftTokenId,
       boss.name
     );
     
@@ -255,5 +321,7 @@ contract FinalFantasyNFT is ERC721 {
       console.log("\n%s: %s HP --> %s HP", player.name, player.hp, player.hp - boss.spellDamage);
       player.hp = player.hp - boss.spellDamage;
     }
+
+    emit SpellCompleted(boss.hp, player.hp);
   }
 }
