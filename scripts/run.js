@@ -9,7 +9,9 @@ const imagesURIs = [
 const hp = [85, 72, 100, 84, 88]; // out of 100
 const mp = [30, 45, 10, 35, 25]; // out of 50
 const spellDamage = [10, 20, 6, 14, 10]; // out of 25
-const attackDamage = [18, 12, 25, 16, 20]; // out of 25
+const attackDamage = [14, 12, 16, 10, 9]; // out of 25
+const limitBreakRequirement = [7, 5, 10, 6, 8]; // out of 10
+const limitBreakDamage = [20, 18, 22, 16, 15]; // out of 25
 
 const main = async () => {
   const gameContractFactory = await hre.ethers.getContractFactory(
@@ -21,12 +23,14 @@ const main = async () => {
     hp,
     mp,
     attackDamage,
-    spellDamage
+    spellDamage,
+    limitBreakRequirement,
+    limitBreakDamage
   );
   await gameContract.deployed();
   console.log("Contract deployed to:", gameContract.address);
 
-  let txn = await gameContract.mintNFT(2);
+  let txn = await gameContract.mintNFT(1);
   await txn.wait();
 
   let returnedTokenUri = await gameContract.tokenURI(1);

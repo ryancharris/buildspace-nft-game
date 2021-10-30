@@ -22,6 +22,8 @@ contract FinalFantasyNFT is ERC721 {
     uint maxMp;
     uint attackDamage;
     uint spellDamage;
+    uint limitBreakRequirement;
+    uint limitBreakDamage;
   }
 
   using Counters for Counters.Counter;
@@ -38,9 +40,11 @@ contract FinalFantasyNFT is ERC721 {
     uint[] memory characterHp,
     uint[] memory characterMp,
     uint[] memory characterAttackDamage,
-    uint[] memory characterSpellDamage
-  ) ERC721("Final Fantasy", "FF") {
-
+    uint[] memory characterSpellDamage,
+    uint[] memory characterLimitBreakRequirement,
+    uint[] memory characterLimitBreakDamage
+  ) ERC721("Final Fantasy", "FFVII") {
+    
     for (uint i = 0; i < characterNames.length; i += 1) {
       defaultCharacters.push(Characteristics({
         index: i,
@@ -51,14 +55,16 @@ contract FinalFantasyNFT is ERC721 {
         mp: characterMp[i],
         maxMp: characterMp[i],
         attackDamage: characterAttackDamage[i],
-        spellDamage: characterSpellDamage[i]
+        spellDamage: characterSpellDamage[i],
+        limitBreakRequirement: characterLimitBreakRequirement[i],
+        limitBreakDamage: characterLimitBreakDamage[i]
       }));
 
       Characteristics memory character = defaultCharacters[i];
       console.log("Done initializing %s w/ %s HP & %s MP", character.name, character.hp, character.mp);
-
-      _tokenIds.increment();
     }
+
+    _tokenIds.increment();
   }
 
   function mintNFT(uint _characterIndex) external {
@@ -66,6 +72,7 @@ contract FinalFantasyNFT is ERC721 {
 
     _safeMint(msg.sender, newItemId);
 
+    // Add new item to nftHolderAttributes
     nftHolderAttributes[newItemId] = Characteristics({
       index: _characterIndex,
       name: defaultCharacters[_characterIndex].name,
@@ -75,11 +82,14 @@ contract FinalFantasyNFT is ERC721 {
       mp: defaultCharacters[_characterIndex].mp,
       maxMp: defaultCharacters[_characterIndex].maxMp,
       attackDamage: defaultCharacters[_characterIndex].attackDamage,
-      spellDamage: defaultCharacters[_characterIndex].spellDamage
+      spellDamage: defaultCharacters[_characterIndex].spellDamage,
+      limitBreakRequirement: defaultCharacters[_characterIndex].limitBreakRequirement,
+      limitBreakDamage: defaultCharacters[_characterIndex].limitBreakDamage
     });
 
-    console.log("Minted NFT w/ tokenId %s and characterIndex %s", newItemId, _characterIndex);
+    console.log("Minted NFT w/ tokenId %s, name %s, and characterIndex %s", newItemId, nftHolderAttributes[newItemId].name, _characterIndex);
 
+    // Update map of address => NFT ID relationships
     nftHolders[msg.sender] = newItemId;
 
     _tokenIds.increment();
@@ -87,21 +97,30 @@ contract FinalFantasyNFT is ERC721 {
 
   function tokenURI(uint256 _tokenId) public view override returns (string memory) {
     Characteristics memory charAttr = nftHolderAttributes[_tokenId];
-    console.log(charAttr.name);
-    console.log(charAttr.imageURI);
-
     string memory strHp = Strings.toString(charAttr.hp);
     string memory strMaxHp = Strings.toString(charAttr.maxHp);
-    // string memory strMp = Strings.toString(charAttr.mp);
-    // string memory strMaxMp = Strings.toString(charAttr.maxMp);
+    string memory strMp = Strings.toString(charAttr.mp);
+    string memory strMaxMp = Strings.toString(charAttr.maxMp);
     string memory strAttackDamage = Strings.toString(charAttr.attackDamage);
-    // string memory strSpellDamage = Strings.toString(charAttr.spellDamage);
+    string memory strSpellDamage = Strings.toString(charAttr.spellDamage);
+    string memory strLimitBreak = Strings.toString(charAttr.limitBreakRequirement);
+    string memory strLimitBreakDamage = Strings.toString(charAttr.limitBreakDamage);
 
     string memory json = Base64.encode(
       bytes(
         string(
           abi.encodePacked(
-            '{"name": "', charAttr.name, ' -- ', Strings.toString(_tokenId), '"}'
+            '{"name": "',
+            charAttr.name,
+            ' -- NFT #: ',
+            Strings.toString(_tokenId),
+            '", "description": "Final Fantasy on the blockchain!", "image": "',
+            charAttr.imageURI,
+            '", "attributes": [ { "trait_type": "Health", "value": ',strHp,', "max_value":',strMaxHp,'}, { "trait_type": "Mana", "value": ',strMp,', "max_value":',strMaxMp,'}, { "trait_type": "Attack Damage", "value": ',
+            strAttackDamage,'}, { "trait_type": "Spell Damage", "value": ',
+            strSpellDamage,'}, { "trait_type": "Limit Break", "value": ',
+            strLimitBreak,'}, { "trait_type": "Limit Break Damage", "value": ',
+            strLimitBreakDamage,'}]}'
           )
         )
       )
