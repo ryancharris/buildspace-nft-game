@@ -10,8 +10,13 @@ const hp = [85, 72, 100, 84, 88]; // out of 100
 const mp = [30, 45, 10, 35, 25]; // out of 50
 const spellDamage = [10, 20, 6, 14, 10]; // out of 25
 const attackDamage = [14, 12, 16, 10, 9]; // out of 25
-const limitBreakRequirement = [7, 5, 10, 6, 8]; // out of 10
-const limitBreakDamage = [20, 18, 22, 16, 15]; // out of 25
+// const limitBreakLevel = [0, 0, 0, 0, 0]; // out of 10
+// const limitBreakRequirement = [7, 5, 10, 6, 8]; // out of 10
+// const limitBreakDamage = [20, 18, 22, 16, 15]; // out of 25
+const sepirothStrings = [
+  "Sepiroth",
+  "https://upload.wikimedia.org/wikipedia/en/c/c4/Sephiroth.png",
+];
 const sepiroth = [150, 150, 50, 50, 20, 20];
 
 const main = async () => {
@@ -25,21 +30,15 @@ const main = async () => {
     mp,
     attackDamage,
     spellDamage,
-    limitBreakRequirement,
-    limitBreakDamage,
-    "Sepiroth",
-    "https://en.wikipedia.org/wiki/Sephiroth_(Final_Fantasy)#/media/File:Sephiroth.png",
+    sepirothStrings,
     sepiroth
   );
   await gameContract.deployed();
   console.log("Contract deployed to:", gameContract.address);
 
   let txn;
-  txn = await gameContract.mintNFT(2);
+  txn = await gameContract.mintNFT(4);
   await txn.wait();
-
-  let returnedTokenUri = await gameContract.tokenURI(1);
-  console.log("Token URI:", returnedTokenUri);
 
   txn = await gameContract.attackBoss();
   await txn.wait();

@@ -22,9 +22,6 @@ contract FinalFantasyNFT is ERC721 {
     uint maxMp;
     uint attackDamage;
     uint spellDamage;
-    uint limitBreakLevel;
-    uint limitBreakRequirement;
-    uint limitBreakDamage;
   }
 
   struct Boss {
@@ -49,7 +46,6 @@ contract FinalFantasyNFT is ERC721 {
 
   event CharacterNFTMinted(address sender, uint256 tokenId, uint256 characterIndex);
   event AttackCompleted(uint newBossHp, uint newPlayerHp);
-  event LimitBreakAttackCompleted(uint newBossHp, uint newPlayerHp);
   event SpellCompleted(uint newBossHp, uint newPlayerHp);
 
   constructor(
@@ -59,16 +55,12 @@ contract FinalFantasyNFT is ERC721 {
     uint[] memory characterMp,
     uint[] memory characterAttackDamage,
     uint[] memory characterSpellDamage,
-    uint[] memory characterLimitBreakLevel,
-    uint[] memory characterLimitBreakRequirement,
-    uint[] memory characterLimitBreakDamage,
-    string memory bossName,
-    string memory bossImageURI,
+    string[] memory bossStrings,
     uint[] memory bossValues
   ) ERC721("Final Fantasy", "FFVII") {
     boss = Boss({
-      name: bossName,
-      imageURI: bossImageURI,
+      name: bossStrings[0],
+      imageURI: bossStrings[1],
       hp: bossValues[0],
       maxHp: bossValues[1],
       mp: bossValues[2],
@@ -89,10 +81,7 @@ contract FinalFantasyNFT is ERC721 {
         mp: characterMp[i],
         maxMp: characterMp[i],
         attackDamage: characterAttackDamage[i],
-        spellDamage: characterSpellDamage[i],
-        limitBreakLevel: characterLimitBreakLevel[i],
-        limitBreakRequirement: characterLimitBreakRequirement[i],
-        limitBreakDamage: characterLimitBreakDamage[i]
+        spellDamage: characterSpellDamage[i]
       }));
 
       Characteristics memory character = defaultCharacters[i];
@@ -118,10 +107,7 @@ contract FinalFantasyNFT is ERC721 {
         mp: defaultCharacters[_characterIndex].mp,
         maxMp: defaultCharacters[_characterIndex].maxMp,
         attackDamage: defaultCharacters[_characterIndex].attackDamage,
-        spellDamage: defaultCharacters[_characterIndex].spellDamage,
-        limitBreakLevel: defaultCharacters[_characterIndex].limitBreakLevel,
-        limitBreakRequirement: defaultCharacters[_characterIndex].limitBreakRequirement,
-        limitBreakDamage: defaultCharacters[_characterIndex].limitBreakDamage
+        spellDamage: defaultCharacters[_characterIndex].spellDamage
       });
     }
 
@@ -143,8 +129,6 @@ contract FinalFantasyNFT is ERC721 {
     string memory strMaxMp = Strings.toString(charAttr.maxMp);
     string memory strAttackDamage = Strings.toString(charAttr.attackDamage);
     string memory strSpellDamage = Strings.toString(charAttr.spellDamage);
-    string memory strLimitBreak = Strings.toString(charAttr.limitBreakRequirement);
-    string memory strLimitBreakDamage = Strings.toString(charAttr.limitBreakDamage);
 
     string memory json = Base64.encode(
       bytes(
@@ -158,9 +142,7 @@ contract FinalFantasyNFT is ERC721 {
             charAttr.imageURI,
             '", "attributes": [ { "trait_type": "Health", "value": ',strHp,', "max_value":',strMaxHp,'}, { "trait_type": "Mana", "value": ',strMp,', "max_value":',strMaxMp,'}, { "trait_type": "Attack Damage", "value": ',
             strAttackDamage,'}, { "trait_type": "Spell Damage", "value": ',
-            strSpellDamage,'}, { "trait_type": "Limit Break", "value": ',
-            strLimitBreak,'}, { "trait_type": "Limit Break Damage", "value": ',
-            strLimitBreakDamage,'}]}'
+            strSpellDamage,'}]}'
           )
         )
       )
@@ -235,39 +217,6 @@ contract FinalFantasyNFT is ERC721 {
     }
 
     emit AttackCompleted(boss.hp, player.hp);
-  }
-
-  function limitBreakAttack() public {
-    uint256 nftTokenId = nftHolders[msg.sender];
-    Characteristics storage player = nftHolderAttributes[nftTokenId];
-
-    require (
-      player.limitBreakLevel == player.limitBreakRequirement,
-      "Error: Player can't perform a limit break!"
-    );
-    console.log(
-      "\n%s (# %s) is performing a special attack!",
-      player.name,
-      nftTokenId
-    );
-
-    require(
-      boss.hp > 0,
-      "Error: Sepiroth has no HP!"
-    );
-    console.log("\n%s has %s HP and takes %s damage!", boss.name, boss.hp, player.limitBreakDamage);
-
-    if (boss.hp < player.limitBreakDamage) {
-      // The boss has died!
-      console.log("\n%s is dead!", boss.name);
-      boss.hp = 0;
-    } else {
-      // The boss takes damage
-      console.log("\n%s: %s HP --> %s HP", boss.name, boss.hp, boss.hp - player.limitBreakDamage);
-      boss.hp = boss.hp - player.limitBreakDamage;
-    }
-
-    emit LimitBreakAttackCompleted(boss.hp, player.hp);
   }
 
   function castSpellOnBoss() public {
