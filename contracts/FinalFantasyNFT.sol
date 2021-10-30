@@ -55,17 +55,19 @@ contract FinalFantasyNFT is ERC721 {
     uint[] memory characterSpellDamage,
     uint[] memory characterLimitBreakRequirement,
     uint[] memory characterLimitBreakDamage,
-    Boss memory boss
+    string memory bossName,
+    string memory bossImageURI,
+    uint[] memory bossValues
   ) ERC721("Final Fantasy", "FFVII") {
     boss = Boss({
-      name: boss.name,
-      imageURI: boss.imageURI,
-      hp: boss.hp,
-      maxHp: boss.maxHp,
-      mp: boss.mp,
-      maxMp: boss.maxMp,
-      attackDamage: boss.attackDamage,
-      spellDamage: boss.spellDamage
+      name: bossName,
+      imageURI: bossImageURI,
+      hp: bossValues[0],
+      maxHp: bossValues[1],
+      mp: bossValues[2],
+      maxMp: bossValues[3],
+      attackDamage: bossValues[4],
+      spellDamage: bossValues[5]
     });
 
     console.log("Done initializing boss %s w/ HP %s, img %s", boss.name, boss.hp, boss.imageURI);
@@ -156,5 +158,102 @@ contract FinalFantasyNFT is ERC721 {
     );
 
     return output;
+  }
+
+  function attackBoss() public {
+    uint256 nftTokenId = nftHolders[msg.sender];
+    Characteristics storage player = nftHolderAttributes[nftTokenId];
+
+    require (
+      player.hp > 0,
+      "Error: Player has no HP!"
+    );
+    console.log(
+      "\n%s (# %s) is attacking!", 
+      player.name, 
+      nftTokenId, 
+      boss.name
+    );
+    
+    require(
+      boss.hp > 0,
+      "Error: Sepiroth has no HP!"
+    );
+    console.log("\n%s has %s HP and takes %s damage!", boss.name, boss.hp, player.attackDamage);
+
+    if (boss.hp < player.attackDamage) {
+      // The boss has died!
+      console.log("\n%s is dead!", boss.name);
+      boss.hp = 0;
+    } else {
+      // The boss takes damage
+      console.log("\n%s: %s HP --> %s HP", boss.name, boss.hp, boss.hp - player.attackDamage);
+      boss.hp = boss.hp - player.attackDamage;
+    }
+
+    console.log("\n%s is counter-attacking %s! They take %s damage.", boss.name, player.name, boss.attackDamage);
+
+    if (player.hp < boss.attackDamage) {
+      // The player has died!
+      console.log("\n%s is dead!", player.name);
+      player.hp = 0;
+    } else {
+      // The player takes damage
+      console.log("\n%s: %s HP --> %s HP", player.name, player.hp, player.hp - boss.attackDamage);
+      player.hp = player.hp - boss.attackDamage;
+    }
+  }
+
+  function castSpellOnBoss() public {
+    uint256 nftTokenId = nftHolders[msg.sender];
+    Characteristics storage player = nftHolderAttributes[nftTokenId];
+
+    require (
+      player.hp > 0,
+      "Error: Player has no HP!"
+    );
+    require (
+      player.mp > 0,
+      "Error: Player has no MP!"
+    );
+
+    console.log(
+      "\n%s (# %s) is casting a spell on %s!", 
+      player.name, 
+      nftTokenId, 
+      boss.name
+    );
+    
+    require(
+      boss.hp > 0,
+      "Error: Sepiroth has no HP!"
+    );
+    require(
+      boss.mp > 0,
+      "Error: Sepiroth has no MP!"
+    );
+    console.log("\n%s has %s HP and takes %s damage!", boss.name, boss.hp, player.spellDamage);
+
+    if (boss.hp < player.spellDamage) {
+      // The boss has died!
+      console.log("\n%s is dead!", boss.name);
+      boss.hp = 0;
+    } else {
+      // The boss takes damage
+      console.log("\n%s: %s HP --> %s HP", boss.name, boss.hp, boss.hp - player.spellDamage);
+      boss.hp = boss.hp - player.spellDamage;
+    }
+
+    console.log("\n%s is counter-attacking %s with magic! They take %s damage.", boss.name, player.name, boss.spellDamage);
+
+    if (player.hp < boss.spellDamage) {
+      // The player has died!
+      console.log("\n%s is dead!", player.name);
+      player.hp = 0;
+    } else {
+      // The player takes damage
+      console.log("\n%s: %s HP --> %s HP", player.name, player.hp, player.hp - boss.spellDamage);
+      player.hp = player.hp - boss.spellDamage;
+    }
   }
 }
