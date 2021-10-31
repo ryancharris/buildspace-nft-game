@@ -138,7 +138,7 @@ contract FinalFantasyNFT is ERC721 {
             charAttr.name,
             ' -- NFT #: ',
             Strings.toString(_tokenId),
-            '", "description": "Final Fantasy on the blockchain!", "image": "',
+            '", "description": "Final Fantasy on the blockchain!", "image": "ipfs://',
             charAttr.imageURI,
             '", "attributes": [ { "trait_type": "Health", "value": ',strHp,', "max_value":',strMaxHp,'}, { "trait_type": "Mana", "value": ',strMp,', "max_value":',strMaxMp,'}, { "trait_type": "Attack Damage", "value": ',
             strAttackDamage,'}, { "trait_type": "Spell Damage", "value": ',

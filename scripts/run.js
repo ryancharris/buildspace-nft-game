@@ -1,10 +1,10 @@
 const names = ["Cloud", "Tifa", "Barret", "Aerith", "Vincent"];
 const imagesURIs = [
-  "https://upload.wikimedia.org/wikipedia/en/9/9e/Cloud_Strife.png",
-  "https://upload.wikimedia.org/wikipedia/en/6/61/Tifa_Lockhart_art.png",
-  "https://upload.wikimedia.org/wikipedia/en/c/cd/Ff7-barret.png",
-  "https://upload.wikimedia.org/wikipedia/en/2/2f/Aerith_Gainsborough.png",
-  "https://upload.wikimedia.org/wikipedia/en/1/1d/Vincent_Valentine.png",
+  "QmcLqDeziZa42FguXaRoaYbQbQL45R9BvyuXKicoJ4K4x4",
+  "QmZ4oVfPrNUb5ft9AUHvkHZKRLdu4VofbAKN5Zti47PRgT",
+  "QmaQsz9J2v53NWySBc4TKsc5UWXdmqHQfnRCQZHpgw4Sj1",
+  "Qmc64cCom47sYAcp3EFhtfdnhHxRtvTFjmn9ZhJYJQhTpm",
+  "QmXNxupQuW2zovnwuWndUDtAXAP28vNXe6uK2fr8TTgbNm",
 ];
 const hp = [85, 72, 100, 84, 88]; // out of 100
 const mp = [30, 45, 10, 35, 25]; // out of 50
@@ -15,7 +15,7 @@ const attackDamage = [14, 12, 16, 10, 9]; // out of 25
 // const limitBreakDamage = [20, 18, 22, 16, 15]; // out of 25
 const sepirothStrings = [
   "Sepiroth",
-  "https://upload.wikimedia.org/wikipedia/en/c/c4/Sephiroth.png",
+  "QmYmnUH8vR7efmieLj4pVyRTvyHFSrKVLrEmvqGn6Dofdb",
 ];
 const sepiroth = [150, 150, 50, 50, 20, 20];
 
